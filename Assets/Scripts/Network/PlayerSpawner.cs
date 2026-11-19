@@ -41,24 +41,49 @@ public class PlayerSpawner : MonoBehaviour, INetworkRunnerCallbacks
         });
     }
 
-    // Temporary buttons, to be replaced by the real menu UI.
-    private void OnGUI()
+    private const string DefaultRoomName = "Room";
+
+public void StartHost(string roomName)
+{
+    StartSession(GameMode.Host, roomName);
+}
+
+public void JoinGame(string roomName)
+{
+    StartSession(GameMode.Client, roomName);
+}
+
+private async void StartSession(GameMode mode, string roomName)
+{
+    if (runner != null)
     {
-        if (runner != null)
-        {
-            return;
-        }
-
-        if (GUI.Button(new Rect(10, 10, 200, 40), "Host"))
-        {
-            StartSession(GameMode.Host);
-        }
-
-        if (GUI.Button(new Rect(10, 60, 200, 40), "Join"))
-        {
-            StartSession(GameMode.Client);
-        }
+        return;
     }
+
+    string sessionName = string.IsNullOrWhiteSpace(roomName) ? DefaultRoomName : roomName.Trim();
+
+    runner = gameObject.AddComponent<NetworkRunner>();
+    runner.ProvideInput = true;
+
+    SceneRef sceneRef = SceneRef.FromIndex(SceneManager.GetActiveScene().buildIndex);
+    NetworkSceneManagerDefault sceneManager = gameObject.AddComponent<NetworkSceneManagerDefault>();
+
+    StartGameResult result = await runner.StartGame(new StartGameArgs
+    {
+        GameMode = mode,
+        SessionName = sessionName,
+        Scene = sceneRef,
+        SceneManager = sceneManager
+    });
+
+    if (!result.Ok)
+    {
+        Debug.LogError($"Could not start session: {result.ShutdownReason}");
+        Destroy(sceneManager);
+        Destroy(runner);
+        runner = null;
+    }
+}
 
     public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {

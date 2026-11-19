@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3534343890802108112}
   - component: {fileID: 149795110626932682}
   - component: {fileID: -202601320436860901}
+  - component: {fileID: -6886649653667036896}
   m_Layer: 0
   m_Name: Food
   m_TagString: Untagged
@@ -74,15 +75,15 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -2413806693520163455, guid: a86470a33a6bf42c4b3595704624658b, type: 3}
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 1.39, y: 1.35}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
 --- !u!114 &-202601320436860901
@@ -101,5 +102,23 @@ MonoBehaviour:
   ObjectInterest: 1
   Flags: 262145
   NestedObjects: []
-  NetworkedBehaviours: []
+  NetworkedBehaviours:
+  - {fileID: -6886649653667036896}
   ForceRemoteRenderTimeframe: 0
+--- !u!114 &-6886649653667036896
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5991339246614804684}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c5dbf92a29d5c6e43b36beb7008484eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spriteRenderer: {fileID: 149795110626932682}
+  visuals: {fileID: 11400000, guid: cae801ea6c264014d974d2e6266c0680, type: 2}
+  palette: {fileID: 11400000, guid: 9a910d1a24b59ef44b7135639cc7cc3c, type: 2}
+  _SpriteIndex: 0
+  _ColorIndex: 0

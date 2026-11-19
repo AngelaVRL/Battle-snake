@@ -103,7 +103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   head: {fileID: 7154011780393060399}
-  headVisual: {fileID: 6885728227499602911}
+  headRenderer: {fileID: 7172574888092226222}
   segmentPrefab: {fileID: 491945183842852820, guid: 61d1a3eec1a72bc4dbec5181fb2e99ad, type: 3}
   segmentSpacing: 0.3
   maxThickness: 2.5
@@ -137,11 +137,19 @@ MonoBehaviour:
   headMover: {fileID: 157387267915983176}
   body: {fileID: 4146550337370865185}
   networkTransform: {fileID: 2803043878135806582}
+  visuals: {fileID: 11400000, guid: cae801ea6c264014d974d2e6266c0680, type: 2}
+  palette: {fileID: 11400000, guid: 9a910d1a24b59ef44b7135639cc7cc3c, type: 2}
   initialSegments: 5
   _SegmentCount: 0
   _Score: 0
   _IsAlive:
     _value: 0
+  _ShapeIndex: 0
+  _ColorIndex: 0
+  _PlayerName:
+    _length: 0
+    _data:
+      Data: 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 --- !u!114 &3944350539195066753
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -206,8 +214,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 1
+  m_LocalScale: {x: 0.3, y: 0.3, z: 1}
+  m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7154011780393060399}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -251,8 +259,8 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: 3f929bc2e87f64441ba0a9c7a42516ca, type: 3}
+  m_SortingOrder: 10
+  m_Sprite: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -260,6 +268,6 @@ SpriteRenderer:
   m_Size: {x: 0.2, y: 0.2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 1
+  m_WasSpriteAssigned: 0
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0

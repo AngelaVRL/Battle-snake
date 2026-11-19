@@ -4,8 +4,10 @@ using UnityEngine;
 
 public class WormBody : MonoBehaviour
 {
+    private const float BodyBrightness = 0.8f;
+
     [SerializeField] private Transform head;
-    [SerializeField] private Transform headVisual;
+    [SerializeField] private SpriteRenderer headRenderer;
     [SerializeField] private Transform segmentPrefab;
     [SerializeField] private float segmentSpacing = 0.3f;
     [SerializeField] private float maxThickness = 2.5f;
@@ -13,13 +15,15 @@ public class WormBody : MonoBehaviour
 
     private readonly List<Transform> segments = new List<Transform>();
     private Vector3 headBaseScale;
+    private Sprite bodySprite;
+    private Color bodyColor = Color.white;
 
     public float Thickness { get; private set; } = 1f;
     public float GrowthProgress { get; private set; }
 
     private void Awake()
     {
-        headBaseScale = headVisual.localScale;
+        headBaseScale = headRenderer.transform.localScale;
     }
 
     private void LateUpdate()
@@ -38,12 +42,37 @@ public class WormBody : MonoBehaviour
         }
     }
 
+    public void ApplyStyle(Sprite headSprite, Sprite newBodySprite, Color headColor)
+    {
+        headRenderer.sprite = headSprite;
+        headRenderer.color = headColor;
+        bodySprite = newBodySprite;
+
+        Color.RGBToHSV(headColor, out float hue, out float saturation, out float value);
+        bodyColor = Color.HSVToRGB(hue, saturation, value * BodyBrightness);
+
+        foreach (Transform segment in segments)
+        {
+            StyleSegment(segment);
+        }
+    }
+
+    public void SetHeadVisible(bool isVisible)
+    {
+        if (headRenderer.gameObject.activeSelf != isVisible)
+        {
+            headRenderer.gameObject.SetActive(isVisible);
+        }
+    }
+
     public void SetSegmentCount(int targetCount)
     {
         while (segments.Count < targetCount)
         {
             Transform last = segments.Count > 0 ? segments[segments.Count - 1] : head;
-            segments.Add(Instantiate(segmentPrefab, last.position, Quaternion.identity));
+            Transform segment = Instantiate(segmentPrefab, last.position, Quaternion.identity);
+            StyleSegment(segment);
+            segments.Add(segment);
         }
 
         while (segments.Count > targetCount)
@@ -54,39 +83,6 @@ public class WormBody : MonoBehaviour
         }
 
         UpdateThickness(targetCount);
-    }
-
-    private void UpdateThickness(int segmentCount)
-    {
-        GrowthProgress = Mathf.Clamp01(segmentCount / (float)segmentsForMaxSize);
-        Thickness = Mathf.Lerp(1f, maxThickness, GrowthProgress);
-
-        headVisual.localScale = headBaseScale * Thickness;
-
-        foreach (Transform segment in segments)
-        {
-            segment.localScale = segmentPrefab.localScale * Thickness;
-        }
-    }
-
-    private void FollowHead()
-    {
-        float spacing = segmentSpacing * Thickness;
-
-        for (int i = 0; i < segments.Count; i++)
-        {
-            Transform previous = i == 0 ? head : segments[i - 1];
-            Vector3 offset = segments[i].position - previous.position;
-            segments[i].position = previous.position + offset.normalized * spacing;
-        }
-    }
-
-    public void SetHeadVisible(bool isVisible)
-    {
-        if (headVisual.gameObject.activeSelf != isVisible)
-        {
-            headVisual.gameObject.SetActive(isVisible);
-        }
     }
 
     public bool OverlapsPoint(Vector2 point, float radius)
@@ -116,4 +112,40 @@ public class WormBody : MonoBehaviour
         return positions;
     }
 
+    private void StyleSegment(Transform segment)
+    {
+        if (bodySprite == null)
+        {
+            return;
+        }
+
+        SpriteRenderer segmentRenderer = segment.GetComponent<SpriteRenderer>();
+        segmentRenderer.sprite = bodySprite;
+        segmentRenderer.color = bodyColor;
+    }
+
+    private void UpdateThickness(int segmentCount)
+    {
+        GrowthProgress = Mathf.Clamp01(segmentCount / (float)segmentsForMaxSize);
+        Thickness = Mathf.Lerp(1f, maxThickness, GrowthProgress);
+
+        headRenderer.transform.localScale = headBaseScale * Thickness;
+
+        foreach (Transform segment in segments)
+        {
+            segment.localScale = segmentPrefab.localScale * Thickness;
+        }
+    }
+
+    private void FollowHead()
+    {
+        float spacing = segmentSpacing * Thickness;
+
+        for (int i = 0; i < segments.Count; i++)
+        {
+            Transform previous = i == 0 ? head : segments[i - 1];
+            Vector3 offset = segments[i].position - previous.position;
+            segments[i].position = previous.position + offset.normalized * spacing;
+        }
+    }
 }

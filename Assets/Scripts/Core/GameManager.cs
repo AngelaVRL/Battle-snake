@@ -122,48 +122,6 @@ public class GameManager : NetworkBehaviour
         State = GameState.Lobby;
     }
 
-    // Temporary debug UI: replaced by the real screens later.
-    private void OnGUI()
-    {
-        if (Object == null || !Object.IsValid || Runner == null)
-        {
-            return;
-        }
-
-        float centerX = Screen.width / 2f - 150f;
-
-        switch (State)
-        {
-            case GameState.Lobby:
-                GUI.Label(new Rect(centerX, 20, 300, 30), $"Lobby - players: {NetworkWorm.ActiveWorms.Count}");
-
-                if (Runner.IsServer && GUI.Button(new Rect(centerX, 50, 300, 40), "Start round"))
-                {
-                    StartRound();
-                }
-                break;
-
-            case GameState.Playing:
-                GUI.Label(new Rect(centerX, 20, 300, 30), $"Time left: {Mathf.CeilToInt(TimeLeft)}");
-                break;
-
-            case GameState.Results:
-                DrawResults(centerX);
-                break;
-        }
-    }
-
-    private void DrawResults(float centerX)
-    {
-        GUI.Label(new Rect(centerX, 20, 300, 30), $"Winner: Player {Winner.PlayerId}");
-
-        float y = 50f;
-
-        foreach (NetworkWorm worm in NetworkWorm.ActiveWorms.OrderByDescending(worm => worm.Score))
-        {
-            GUI.Label(new Rect(centerX, y, 300, 25),
-                $"Player {worm.Object.InputAuthority.PlayerId}: {worm.Score}");
-            y += 25f;
-        }
-    }
+    public bool IsHost => Object != null && Object.HasStateAuthority;
+    
 }

@@ -16,14 +16,23 @@ public class NetworkWorm : NetworkBehaviour
     [SerializeField] private WormHeadMover headMover;
     [SerializeField] private WormBody body;
     [SerializeField] private NetworkTransform networkTransform;
+    [SerializeField] private GameVisuals visuals;
+    [SerializeField] private ColorPalette palette;
     [SerializeField] private int initialSegments = 5;
 
     [Networked] public int SegmentCount { get; set; }
     [Networked] public int Score { get; set; }
     [Networked] public NetworkBool IsAlive { get; set; }
+    [Networked] public int ShapeIndex { get; set; }
+    [Networked] public int ColorIndex { get; set; }
+    [Networked] public NetworkString<_16> PlayerName { get; set; }
 
     private FoodSpawner foodSpawner;
     private CameraFollow cameraFollow;
+    private int appliedShape = -1;
+    private int appliedColor = -1;
+
+    public static NetworkWorm Local { get; private set; }
 
     public override void Spawned()
     {
@@ -38,14 +47,21 @@ public class NetworkWorm : NetworkBehaviour
 
         if (Object.HasInputAuthority)
         {
+            Local = this;
             cameraFollow = Camera.main.GetComponent<CameraFollow>();
             cameraFollow.SetTarget(transform);
+            RPC_SetProfile(PlayerProfile.ShapeIndex, PlayerProfile.ColorIndex, PlayerProfile.Name);
         }
     }
 
     public override void Despawned(NetworkRunner runner, bool hasState)
     {
         ActiveWorms.Remove(this);
+
+        if (Local == this)
+        {
+            Local = null;
+        }
     }
 
     public override void FixedUpdateNetwork()
@@ -72,10 +88,11 @@ public class NetworkWorm : NetworkBehaviour
 
     public override void Render()
     {
+        RefreshStyle();
         body.SetHeadVisible(IsAlive);
         body.SetSegmentCount(IsAlive ? SegmentCount : 0);
 
-        if (Object.HasInputAuthority)
+        if (Object.HasInputAuthority && cameraFollow != null)
         {
             cameraFollow.SetGrowthProgress(body.GrowthProgress);
         }
@@ -92,6 +109,30 @@ public class NetworkWorm : NetworkBehaviour
     public void SetWaiting()
     {
         IsAlive = false;
+    }
+
+    [Rpc(RpcSources.InputAuthority, RpcTargets.StateAuthority)]
+    private void RPC_SetProfile(int shapeIndex, int colorIndex, NetworkString<_16> playerName)
+    {
+        ShapeIndex = Mathf.Clamp(shapeIndex, 0, visuals.ShapeCount - 1);
+        ColorIndex = Mathf.Clamp(colorIndex, 0, palette.PlayerColorCount - 1);
+        PlayerName = playerName;
+    }
+
+    private void RefreshStyle()
+    {
+        if (ShapeIndex == appliedShape && ColorIndex == appliedColor)
+        {
+            return;
+        }
+
+        appliedShape = ShapeIndex;
+        appliedColor = ColorIndex;
+
+        body.ApplyStyle(
+            visuals.GetHeadSprite(ShapeIndex),
+            visuals.GetBodySprite(ShapeIndex),
+            palette.GetPlayerColor(ColorIndex));
     }
 
     private void Eat()
@@ -128,7 +169,7 @@ public class NetworkWorm : NetworkBehaviour
 
         foreach (Vector2 position in body.GetSegmentPositions(DeathFoodStep))
         {
-            foodSpawner.SpawnFoodAt(position);
+            foodSpawner.SpawnFoodAt(position, ColorIndex);
         }
     }
 }
