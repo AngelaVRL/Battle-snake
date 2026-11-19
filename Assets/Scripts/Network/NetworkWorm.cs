@@ -10,8 +10,6 @@ public class NetworkWorm : NetworkBehaviour
     private const float SegmentRadius = 0.2f;
     private const int SegmentsPerFood = 1;
     private const int DeathFoodStep = 2;
-    private const float RespawnDelaySeconds = 3f;
-    private const float RespawnAreaFactor = 0.8f;
 
     public static readonly List<NetworkWorm> ActiveWorms = new List<NetworkWorm>();
 
@@ -23,7 +21,6 @@ public class NetworkWorm : NetworkBehaviour
     [Networked] public int SegmentCount { get; set; }
     [Networked] public int Score { get; set; }
     [Networked] public NetworkBool IsAlive { get; set; }
-    [Networked] private TickTimer RespawnTimer { get; set; }
 
     private FoodSpawner foodSpawner;
     private CameraFollow cameraFollow;
@@ -35,7 +32,7 @@ public class NetworkWorm : NetworkBehaviour
         if (Object.HasStateAuthority)
         {
             SegmentCount = initialSegments;
-            IsAlive = true;
+            IsAlive = false;
             foodSpawner = FindObjectOfType<FoodSpawner>();
         }
 
@@ -53,14 +50,13 @@ public class NetworkWorm : NetworkBehaviour
 
     public override void FixedUpdateNetwork()
     {
-        if (!Object.HasStateAuthority)
+        if (!Object.HasStateAuthority || !IsAlive)
         {
             return;
         }
 
-        if (!IsAlive)
+        if (GameManager.Instance == null || GameManager.Instance.State != GameState.Playing)
         {
-            TryRespawn();
             return;
         }
 
@@ -83,6 +79,19 @@ public class NetworkWorm : NetworkBehaviour
         {
             cameraFollow.SetGrowthProgress(body.GrowthProgress);
         }
+    }
+
+    public void PrepareForRound(Vector2 position)
+    {
+        networkTransform.Teleport(position);
+        SegmentCount = initialSegments;
+        Score = 0;
+        IsAlive = true;
+    }
+
+    public void SetWaiting()
+    {
+        IsAlive = false;
     }
 
     private void Eat()
@@ -121,32 +130,5 @@ public class NetworkWorm : NetworkBehaviour
         {
             foodSpawner.SpawnFoodAt(position);
         }
-
-        RespawnTimer = TickTimer.CreateFromSeconds(Runner, RespawnDelaySeconds);
-    }
-
-    // Temporary: replaced by the round system in the next stage.
-    private void TryRespawn()
-    {
-        if (!RespawnTimer.Expired(Runner))
-        {
-            return;
-        }
-
-        Vector2 position = Random.insideUnitCircle * foodSpawner.MapRadius * RespawnAreaFactor;
-        networkTransform.Teleport(position);
-        SegmentCount = initialSegments;
-        IsAlive = true;
-    }
-
-    // Temporary debug label: replaced by the real HUD later.
-    private void OnGUI()
-    {
-        if (!Object.IsValid || !Object.HasInputAuthority)
-        {
-            return;
-        }
-
-        GUI.Label(new Rect(10, 110, 400, 30), $"Score: {Score}  Length: {SegmentCount}  Alive: {IsAlive}");
     }
 }
