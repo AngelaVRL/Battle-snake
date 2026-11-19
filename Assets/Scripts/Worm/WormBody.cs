@@ -26,7 +26,7 @@ public class WormBody : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             Transform last = segments.Count > 0 ? segments[segments.Count - 1] : head;
-            Transform segment = Instantiate(segmentPrefab, last.position, Quaternion.identity, transform);
+            Transform segment = Instantiate(segmentPrefab, last.position, Quaternion.identity);
             segments.Add(segment);
         }
     }
@@ -38,6 +38,16 @@ public class WormBody : MonoBehaviour
             Transform previous = i == 0 ? head : segments[i - 1];
             Vector3 offset = segments[i].position - previous.position;
             segments[i].position = previous.position + offset.normalized * segmentSpacing;
+        }
+    }
+    private void OnDestroy()
+    {
+        foreach (Transform segment in segments)
+        {
+            if (segment != null)
+            {
+                Destroy(segment.gameObject);
+            }
         }
     }
 }
